@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import BlogItem from "../blog/blog-item";
+import BlogModal from "../modals/blog-modal"
 
 class Blog extends Component {
   constructor() {
@@ -16,25 +17,24 @@ class Blog extends Component {
     };
 
     this.getBlogItems = this.getBlogItems.bind(this);
-    this.activateInfiniteScroll();
+    this.onScroll = this.onScroll.bind(this);
+    window.addEventListener("scroll", this.onScroll, false);
   }
 
-  activateInfiniteScroll() {
-    window.onscroll = () => {
-      if (
-        this.state.isLoading ||
-        this.state.blogItems.length === this.state.totalCount
-      ) {
-        return;
-      }
+  onScroll() {
+    if (
+      this.state.isLoading ||
+      this.state.blogItems.length === this.state.totalCount
+    ) {
+      return;
+    }
 
-      if (
-        window.innerHeight + document.documentElement.scrollTop ===
-        document.documentElement.offsetHeight
-      ) {
-        this.getBlogItems();
-      }
-    };
+    if (
+      window.innerHeight + document.documentElement.scrollTop ===
+      document.documentElement.offsetHeight
+    ) {
+      this.getBlogItems();
+    }
   }
 
   getBlogItems() {
@@ -51,7 +51,7 @@ class Blog extends Component {
         }
       )
       .then(response => {
-        console.log("gettting", response.data);
+        console.log("getting", response.data);
         this.setState({
           blogItems: this.state.blogItems.concat(response.data.portfolio_blogs),
           totalCount: response.data.meta.total_records,
@@ -63,8 +63,12 @@ class Blog extends Component {
       });
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.getBlogItems();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("scroll", this.onScroll, false);
   }
 
   render() {
@@ -74,6 +78,7 @@ class Blog extends Component {
 
     return (
       <div className="blog-container">
+        <BlogModal />
         <div className="content-container">{blogRecords}</div>
 
         {this.state.isLoading ? (
